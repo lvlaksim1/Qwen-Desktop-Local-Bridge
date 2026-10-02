@@ -10,7 +10,7 @@ See `.context/current/state.md`: product implementation is live on main@8eead85;
 
 ## Additional 2026-10-02 update
 
-CI confirmed green via public API; empty commit a70e205 [dev-release] triggered prerelease dev-a70e205 with Setup.exe (link given to owner). Belief B-011 added, R-003 closed.
+CI confirmed green via public API; commits a70e205 + 0bc8fd9 [dev-release] triggered prerelease dev-0bc8fd9 with Setup.exe incl. AppMutex fix (isolated from ChatGPT app; link given to owner). Belief B-011 added, R-003 closed.
 
 ## Next operation
 

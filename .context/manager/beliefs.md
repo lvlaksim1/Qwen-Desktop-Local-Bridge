@@ -43,3 +43,7 @@ authority: verified-repository
 B-011 Windows CI build verified green and first dev-release published: GitHub Actions "Windows Build" completed success on main (8eead85 and trigger commit a70e205); prerelease tag dev-a70e205 contains QwenDesktopLocalBridge-Setup.exe (49.1 MB) and QwenDesktopLocalBridge-PublishManifest.json. Installer link delivered to owner 2026-10-02.
 source: public GitHub API checks @ 2026-10-02 (actions/runs conclusion=success; releases/tags/dev-a70e205 assets) + git push a70e205 [dev-release]
 authority: verified-repository
+
+B-012 Full product isolation from ChatGPT Desktop Local Bridge confirmed in main: unique AppId {{7D6B9AF8-...}}, install dir %LOCALAPPDATA%\Programs\Qwen Desktop Local Bridge, no chatgpt references anywhere in iss/cs/csproj/yml/js sources (git grep verified); owner-reported "installed over ChatGPT app" was caused by stale non-existent release link dev-6c91e8b (404) and/or running-instance file lock, not by shared identity. New prerelease dev-0bc8fd9 adds AppMutex=QwenDesktopLocalBridge_SingleInstance so Setup closes a running instance instead of failing; CI green; assets include Setup.exe + Update-from-dev-a70e205.exe.
+source: git grep origin/main @ 2026-10-02 + installer diff commit 0bc8fd9 + GitHub API run 37023533650 conclusion=success + releases assets listing
+authority: verified-repository
