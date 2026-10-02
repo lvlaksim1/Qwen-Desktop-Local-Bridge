@@ -7,3 +7,5 @@ Product reality (updated 2026-10-02): per owner directive ("сделай ана�
 Next milestone: live E2E on Windows against chat.qwen.ai (BRIDGE-M1 equivalent handshake + READY probe), selector calibration (P-002 folded into live testing), then feature parity checks M2/M3 equivalents.
 
 Branches: main = product authority (HEAD 8eead85); manager-state = manager-state authority. Default branch remains main.
+
+Current dev-release (2026-10-02): tag dev-0bc8fd9 (main@0bc8fd9) — QwenDesktopLocalBridge-Setup.exe + delta Update-from-dev-a70e205.exe. Product fully isolated from ChatGPT Desktop Local Bridge (unique AppId, install dir, registry group, AppMutex added so Setup closes running instance instead of failing). Earlier link dev-6c91e8b was stale/non-existent (404).
