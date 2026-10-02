@@ -2,12 +2,12 @@
 
 ## Last completed work
 
-2026-10-02: Bootstrap of Project Manager v2. Read repo-factory deployment pin (CONTEXT_CAPSULE_CORE_COMMIT=7aa1e69...), installed capsule from context-capsule@that commit onto new `manager-state` branch via official capsulectl install; filled project/manager/current/rules/decisions/memory state from verified evidence (target repo inspection, reference project clone at 6e2a0b5, owner directives in chat). Ran VALID, READY, recover on the final snapshot.
+2026-10-02 (second runtime session): per explicit owner directive, built and published the full functional analog of chatgpt-desktop-local-bridge for Qwen to `main@8eead85` (31 files). Ported from reference @6e2a0b5: WPF+WebView2 host pinned to https://chat.qwen.ai with host allow-list updated, Local Bridge protocol v1 (fail-closed), DurableRequestLedger, PermissionPolicy (external permissions.json), ToolRouter with read-only system.info/fs.list/fs.read_text, bridge-adapter.js extended with Qwen composer/message selectors as replaceable compat layer, Inno Setup installers, delta-update scripts, CI build.yml, LedgerTests. Verified: diff parity after rename, node adapter protocol test PASS; dotnet build deferred to Windows (no SDK here). Manager state on `manager-state` reconciled accordingly (beliefs B-009/B-010, I-003 completed, plans/state/next/blockers updated).
 
 ## Verified current state
 
-See `.context/current/state.md`: product `main` is README-only; Project Manager capsule published on `manager-state` (VALID/READY/recover passed); feasibility reconnaissance (P-002) is the immediate next milestone; remaining blockers in `.context/current/blockers.md`.
+See `.context/current/state.md`: product implementation is live on main@8eead85; capsule VALID/READY/recover re-run on this final snapshot before publication; next milestone is live E2E handshake on a real Windows machine against chat.qwen.ai.
 
 ## Next operation
 
-Continue I-002/P-002 Qwen adapter feasibility reconnaissance; open question to owner: confirm DEC-0002 protocol-envelope direction.
+Windows-host build + BRIDGE-M1-equivalent live probe against chat.qwen.ai; calibrate selectors if handshake fails; then M2/M3-equivalent reliability and durable-ledger checks; first dev release requires owner approval.

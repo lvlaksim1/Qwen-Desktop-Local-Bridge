@@ -1,6 +1,6 @@
 # Next actions
 
-1. (Owner) Revoke/rotate the exposed PAT — R-002.
-2. (Manager) Execute P-002: Qwen adapter feasibility reconnaissance; produce docs/ADAPTER-FEASIBILITY.md and a protocol-envelope decision proposal (DEC-0002).
-3. (Owner gate) Approve protocol envelope naming (DEC-0002) and scaffold plan P-003.
-4. After approval: scaffold solution on a feature branch, wire CI build, port ledger tests.
+1. (Windows host) Build and run the app on a real Windows machine: `dotnet build QwenDesktopLocalBridge.sln -c Release`, then live handshake against chat.qwen.ai (BRIDGE-M1 equivalent: READY probe, fs.list/fs.read_text round-trip).
+2. (Manager/next runtime) Calibrate bridge-adapter.js selectors against actual chat.qwen.ai DOM if M1 handshake fails; record findings as episodic memory + belief update.
+3. (Owner gate) Confirm whether protocol envelope naming should stay bridge-local or be renamed for Qwen branding (former DEC-0002 question — current code keeps the reference v1 envelope unchanged).
+4. After M1 passes: port reliability probes (M2 equivalent) and durable-ledger crash-resume checks (M3 equivalent); cut first dev release via installer scripts.
