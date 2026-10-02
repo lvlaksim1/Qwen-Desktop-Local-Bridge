@@ -16,6 +16,7 @@
 #define MyAppURL "https://github.com/lvlaksim1/qwen-desktop-local-bridge"
 
 [Setup]
+AppMutex=QwenDesktopLocalBridge_SingleInstance
 AppId={{7D6B9AF8-6D08-44E1-B2F5-8A6341D99165}
 AppName={#MyAppName}
 AppVersion={#MyAppVersion}
