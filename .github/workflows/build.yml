@@ -1,0 +1,187 @@
+name: Windows Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Validate Web adapter JavaScript
+        run: node --check .\src\QwenDesktopLocalBridge\Web\bridge-adapter.js
+
+      - name: Test Web adapter protocol diagnostics
+        run: node .\scripts\test-bridge-adapter-protocol.mjs
+
+      - name: Validate update PowerShell syntax
+        shell: pwsh
+        run: |
+          [scriptblock]::Create((Get-Content .\scripts\build-delta-update.ps1 -Raw)) | Out-Null
+          [scriptblock]::Create((Get-Content .\scripts\create-publish-manifest.ps1 -Raw)) | Out-Null
+          [scriptblock]::Create((Get-Content .\scripts\update\Apply-Update.ps1 -Raw)) | Out-Null
+          [scriptblock]::Create((Get-Content .\src\QwenDesktopLocalBridge\Support\Uninstall-Bridge.ps1 -Raw)) | Out-Null
+
+      - name: Restore
+        run: dotnet restore .\QwenDesktopLocalBridge.sln
+
+      - name: Build
+        run: dotnet build .\QwenDesktopLocalBridge.sln --configuration Release --no-restore
+
+      - name: Test durable request ledger
+        run: dotnet run --project .\tests\QwenDesktopLocalBridge.LedgerTests\QwenDesktopLocalBridge.LedgerTests.csproj --configuration Release --no-build
+
+      - name: Publish self-contained win-x64 test build
+        run: >-
+          dotnet publish .\src\QwenDesktopLocalBridge\QwenDesktopLocalBridge.csproj
+          --configuration Release
+          --runtime win-x64
+          --self-contained true
+          --output .\publish\win-x64
+
+      - name: Stamp release identity
+        shell: pwsh
+        run: |
+          $sha = "${{ github.sha }}"
+          $short = $sha.Substring(0, 7)
+          $tag = "dev-$short"
+          $version = "0.1.${{ github.run_number }}.0"
+
+          [ordered]@{
+            schema = "qwen-desktop-local-bridge-release-v1"
+            tag = $tag
+            commit = $sha
+            appVersion = $version
+          } | ConvertTo-Json | Set-Content .\publish\win-x64\release-info.json -Encoding UTF8
+
+      - name: Smoke-test exact manifest and delta package builder
+        shell: pwsh
+        run: |
+          .\scripts\create-publish-manifest.ps1 -PublishDir .\publish\win-x64 -Tag smoke-base -Commit "${{ github.sha }}" -OutputPath .\publish-manifest-smoke.json
+          .\scripts\build-delta-update.ps1 -BaseManifestPath .\publish-manifest-smoke.json -CurrentPublishDir .\publish\win-x64 -BaseTag smoke-base -TargetTag smoke-target -TargetCommit "${{ github.sha }}" -OutputPath .\delta-smoke
+          if (-not (Test-Path .\delta-smoke\update-manifest.json)) { throw "Delta smoke directory was not created." }
+          $manifest = Get-Content .\delta-smoke\update-manifest.json -Raw | ConvertFrom-Json
+          if ($manifest.schema -ne "qwen-desktop-local-bridge-delta-v1") { throw "Unexpected delta manifest schema." }
+          if ($manifest.baseValidationMode -ne "exact") { throw "Smoke delta is not using exact validation." }
+          if (@($manifest.files).Count -ne 0) { throw "Zero-delta smoke test unexpectedly contains changed files." }
+
+      - name: Install Inno Setup compiler
+        shell: pwsh
+        run: |
+          choco install innosetup -y --no-progress
+          Get-Command ISCC.exe
+
+      - name: Smoke-test single-file update EXE
+        shell: pwsh
+        run: |
+          $version = "0.1.${{ github.run_number }}.0"
+          $deltaDir = (Resolve-Path ".\delta-smoke").Path
+          $outputDir = $PWD.Path
+          ISCC.exe "/DDeltaDir=$deltaDir" "/DOutputDir=$outputDir" "/DBaseTag=smoke-base" "/DTargetTag=smoke-target" "/DUpdateVersion=$version" ".\installer\DeltaUpdate.iss"
+          if (-not (Test-Path ".\QwenDesktopLocalBridge-Update-from-smoke-base.exe")) {
+            throw "Single-file update smoke EXE was not produced."
+          }
+          Remove-Item .\QwenDesktopLocalBridge-Update-from-smoke-base.exe -Force
+          Remove-Item .\delta-smoke -Recurse -Force
+
+      - name: Build upgradeable Windows installer
+        shell: pwsh
+        run: |
+          $version = "0.1.${{ github.run_number }}.0"
+          $sourceDir = (Resolve-Path ".\publish\win-x64").Path
+          $outputDir = $PWD.Path
+          ISCC.exe "/DMyAppVersion=$version" "/DSourceDir=$sourceDir" "/DOutputDir=$outputDir" ".\installer\QwenDesktopLocalBridge.iss"
+          if (-not (Test-Path ".\QwenDesktopLocalBridge-Setup.exe")) {
+            throw "Installer was not produced."
+          }
+
+      - name: Build incremental update EXEs
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && contains(github.event.head_commit.message, '[dev-release]')
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $sha = "${{ github.sha }}"
+          $short = $sha.Substring(0, 7)
+          $targetTag = "dev-$short"
+          $version = "0.1.${{ github.run_number }}.0"
+          $outputDir = $PWD.Path
+
+          .\scripts\create-publish-manifest.ps1 -PublishDir .\publish\win-x64 -Tag $targetTag -Commit $sha -OutputPath .\QwenDesktopLocalBridge-PublishManifest.json
+
+          function Build-UpdateExe([string]$BaseTag, [string]$DeltaDir) {
+            $resolvedDelta = (Resolve-Path $DeltaDir).Path
+            ISCC.exe "/DDeltaDir=$resolvedDelta" "/DOutputDir=$outputDir" "/DBaseTag=$BaseTag" "/DTargetTag=$targetTag" "/DUpdateVersion=$version" ".\installer\DeltaUpdate.iss"
+
+            $expected = Join-Path $PWD ("QwenDesktopLocalBridge-Update-from-" + $BaseTag + ".exe")
+            if (-not (Test-Path -LiteralPath $expected)) {
+              throw "Incremental update EXE was not produced for $BaseTag."
+            }
+          }
+
+          # Normal exact-manifest bases: only releases whose exact publish bytes are known.
+          $releaseRows = @(gh release list --limit 20 --json tagName,isPrerelease,publishedAt | ConvertFrom-Json) |
+            Where-Object { $_.isPrerelease -and $_.tagName -like "dev-*" } |
+            Sort-Object { [DateTimeOffset]$_.publishedAt } -Descending
+
+          $exactBasesBuilt = 0
+          foreach ($row in $releaseRows) {
+            if ($exactBasesBuilt -ge 2) { break }
+
+            $view = gh release view $row.tagName --json assets | ConvertFrom-Json
+            $hasInstaller = @($view.assets | Where-Object { $_.name -eq "QwenDesktopLocalBridge-Setup.exe" }).Count -gt 0
+            $hasManifest = @($view.assets | Where-Object { $_.name -eq "QwenDesktopLocalBridge-PublishManifest.json" }).Count -gt 0
+            if (-not $hasInstaller -or -not $hasManifest) { continue }
+
+            $safeTag = ($row.tagName -replace '[^A-Za-z0-9._-]', '_')
+            $manifestDir = Join-Path $PWD ("manifest-" + $safeTag)
+            $deltaDir = Join-Path $PWD ("delta-" + $safeTag)
+            New-Item -ItemType Directory -Path $manifestDir -Force | Out-Null
+
+            try {
+              gh release download $row.tagName --pattern "QwenDesktopLocalBridge-PublishManifest.json" --dir $manifestDir --clobber
+              $baseManifest = Join-Path $manifestDir "QwenDesktopLocalBridge-PublishManifest.json"
+              .\scripts\build-delta-update.ps1 -BaseManifestPath $baseManifest -CurrentPublishDir .\publish\win-x64 -BaseTag $row.tagName -TargetTag $targetTag -TargetCommit $sha -OutputPath $deltaDir
+              Build-UpdateExe $row.tagName $deltaDir
+              $exactBasesBuilt++
+            }
+            finally {
+              Remove-Item -LiteralPath $manifestDir -Recurse -Force -ErrorAction SilentlyContinue
+              Remove-Item -LiteralPath $deltaDir -Recurse -Force -ErrorAction SilentlyContinue
+            }
+          }
+
+      - name: Verify GitHub CLI
+        run: gh --version
+
+      - name: Create development prerelease
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && contains(github.event.head_commit.message, '[dev-release]')
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $sha = "${{ github.sha }}"
+          $short = $sha.Substring(0, 7)
+          $tag = "dev-$short"
+          $assets = @(".\QwenDesktopLocalBridge-Setup.exe", ".\QwenDesktopLocalBridge-PublishManifest.json")
+          $assets += @(Get-ChildItem -Path ".\QwenDesktopLocalBridge-Update-from-*.exe" -File -ErrorAction SilentlyContinue | ForEach-Object { $_.FullName })
+          gh release create $tag @assets --target $sha --prerelease --title "Development build $short" --notes "For ordinary upgrades use the matching small Update-from-*.exe. It validates the installed base, applies only changed files, rolls back on failure, restarts the app, and never touches the WebView2 profile. Setup.exe remains for first installation or fallback."
+
+      - name: Enforce development release retention
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: .\scripts\cleanup-dev-releases.ps1 -KeepInstallable 2
