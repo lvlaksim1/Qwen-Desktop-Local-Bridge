@@ -39,3 +39,7 @@ authority: owner-directive
 B-010 C# sources are byte-equivalent to the reference after identifier rename (QwenDesktopLocalBridge->ChatGptDesktopLocalBridge); only intentional diffs remain: host URL/chat.qwen.ai allow-list in MainWindow.xaml.cs, brand strings in BridgeHost.cs, and Qwen-specific selector additions in bridge-adapter.js. dotnet SDK unavailable in this environment, so no Windows build was run here; node adapter protocol test passes (scripts/test-bridge-adapter-protocol.mjs -> PASS).
 source: diff -r between local clones of reference @6e2a0b5 and qwen checkout @ 2026-10-02; node test run
 authority: verified-repository
+
+B-011 Windows CI build verified green and first dev-release published: GitHub Actions "Windows Build" completed success on main (8eead85 and trigger commit a70e205); prerelease tag dev-a70e205 contains QwenDesktopLocalBridge-Setup.exe (49.1 MB) and QwenDesktopLocalBridge-PublishManifest.json. Installer link delivered to owner 2026-10-02.
+source: public GitHub API checks @ 2026-10-02 (actions/runs conclusion=success; releases/tags/dev-a70e205 assets) + git push a70e205 [dev-release]
+authority: verified-repository

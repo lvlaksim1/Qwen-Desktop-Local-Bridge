@@ -8,6 +8,10 @@
 
 See `.context/current/state.md`: product implementation is live on main@8eead85; capsule VALID/READY/recover re-run on this final snapshot before publication; next milestone is live E2E handshake on a real Windows machine against chat.qwen.ai.
 
+## Additional 2026-10-02 update
+
+CI confirmed green via public API; empty commit a70e205 [dev-release] triggered prerelease dev-a70e205 with Setup.exe (link given to owner). Belief B-011 added, R-003 closed.
+
 ## Next operation
 
 Windows-host build + BRIDGE-M1-equivalent live probe against chat.qwen.ai; calibrate selectors if handshake fails; then M2/M3-equivalent reliability and durable-ledger checks; first dev release requires owner approval.
