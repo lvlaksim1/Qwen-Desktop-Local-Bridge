@@ -6,8 +6,8 @@
 
 ## Verified current state
 
-See `.context/current/state.md`: product `main` is README-only; feasibility reconnaissance (P-002) is the immediate next milestone; blockers in `.context/current/blockers.md` (incl. exposed PAT requiring owner rotation).
+See `.context/current/state.md`: product `main` is README-only; Project Manager capsule published on `manager-state` (VALID/READY/recover passed); feasibility reconnaissance (P-002) is the immediate next milestone; remaining blockers in `.context/current/blockers.md`.
 
 ## Next operation
 
-Continue I-002/P-002 Qwen adapter feasibility reconnaissance; first questions to owner: rotate PAT, confirm DEC-0002 protocol-envelope direction.
+Continue I-002/P-002 Qwen adapter feasibility reconnaissance; open question to owner: confirm DEC-0002 protocol-envelope direction.

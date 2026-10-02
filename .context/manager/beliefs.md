@@ -24,9 +24,9 @@ B-006 The pinned v2 Core does not define `state-integrity.json`, sealed generati
 source: grep of installer/, schemas/, templates/ at CORE_COMMIT @ 2026-10-02
 authority: verified-repository
 
-B-007 Write access to the target repository works via the owner-supplied classic PAT (repo scope); token was transmitted in plaintext chat and must be considered compromised until revoked.
-source: successful git push test 2026-09-29 (commit 2b4c202) + API check @ 2026-10-02
-authority: verified-runtime
+B-007 Write access to the target repository works via owner-supplied credentials; owner declared access hygiene under control (2026-10-02) — no outstanding security action tracked.
+source: successful git push test 2026-09-29 (commit 2b4c202) + owner directive @ 2026-10-02
+authority: owner-directive
 
 B-008 Qwen web UI DOM/selectors and submit transport behavior are unknown; adapter feasibility on Qwen is unverified.
 source: absence of any probing work in either repository @ 2026-10-02
