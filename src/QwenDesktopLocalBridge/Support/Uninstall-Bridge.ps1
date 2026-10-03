@@ -5,7 +5,7 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-$uninstallKey = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\{7D6B9AF8-6D08-44E1-B2F5-8A6341D99165}_is1"
+$uninstallKey = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\{6B6ED332-7F58-4A6F-B706-A65AFE339FDD}_is1"
 $scriptPath = $MyInvocation.MyCommand.Path
 $supportDir = Split-Path -Parent $scriptPath
 $installDir = Split-Path -Parent $supportDir

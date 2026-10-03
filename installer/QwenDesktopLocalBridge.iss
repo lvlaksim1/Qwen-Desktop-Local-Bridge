@@ -17,7 +17,7 @@
 
 [Setup]
 AppMutex=QwenDesktopLocalBridge_SingleInstance
-AppId={{7D6B9AF8-6D08-44E1-B2F5-8A6341D99165}
+AppId={{6B6ED332-7F58-4A6F-B706-A65AFE339FDD}
 AppName={#MyAppName}
 AppVersion={#MyAppVersion}
 AppPublisher={#MyAppPublisher}

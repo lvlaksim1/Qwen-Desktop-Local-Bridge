@@ -13,7 +13,7 @@ $windowsPowerShell = Join-Path $env:SystemRoot "System32\WindowsPowerShell\v1.0\
 $processName = "QwenDesktopLocalBridge"
 $successMarker = Join-Path $packageRoot "update-success.marker"
 Remove-Item -LiteralPath $successMarker -Force -ErrorAction SilentlyContinue
-$uninstallKey = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\{7D6B9AF8-6D08-44E1-B2F5-8A6341D99165}_is1"
+$uninstallKey = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\{6B6ED332-7F58-4A6F-B706-A65AFE339FDD}_is1"
 $updateLogDir = Join-Path $env:LOCALAPPDATA "QwenDesktopLocalBridge\logs"
 $updateLogPath = Join-Path $updateLogDir "update-last.log"
 New-Item -ItemType Directory -Path $updateLogDir -Force | Out-Null
