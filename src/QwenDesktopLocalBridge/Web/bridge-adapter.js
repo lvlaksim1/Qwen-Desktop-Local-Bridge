@@ -188,17 +188,66 @@
     return state;
   }
 
+  function dispatchKeyboardEvent(target, type, key, code, keyCode) {
+    const init = {
+      bubbles: true,
+      cancelable: true,
+      composed: true,
+      key: key,
+      code: code,
+      keyCode: keyCode,
+      which: keyCode
+    };
+
+    if (typeof KeyboardEvent === "function") {
+      target.dispatchEvent(new KeyboardEvent(type, init));
+      return;
+    }
+
+    const event = document.createEvent("Events");
+    event.initEvent(type, true, true);
+    event.key = key;
+    event.code = code;
+    event.keyCode = keyCode;
+    event.which = keyCode;
+    target.dispatchEvent(event);
+  }
+
+  function findSendButton(composer) {
+    // Qwen Coder submits through a dedicated send button instead of a form.
+    const roots = [
+      composer.closest("form"),
+      composer.parentElement?.closest("div"),
+      document
+    ].filter(Boolean);
+
+    for (const root of roots) {
+      const candidates = root.querySelectorAll(
+        "button[type='submit'], " +
+        "[data-testid*='send' i], " +
+        "[aria-label*='Send' i], " +
+        "[aria-label*='Отправить' i], " +
+        "[class*='send-button' i], " +
+        "[class*='sendButton' i]"
+      );
+
+      for (const element of candidates) {
+        if (element instanceof HTMLButtonElement || element instanceof HTMLInputElement) {
+          if (!element.disabled) {
+            return element;
+          }
+        }
+      }
+    }
+
+    return null;
+  }
+
   function submitNativeSend() {
     const composer = findComposer();
     if (!composer) {
       lastNativeSendDebug = { stage: "submit", accepted: false, reason: "composer-not-found" };
       return { accepted: false, reason: "composer-not-found" };
-    }
-
-    const form = composer.closest("form");
-    if (!form) {
-      lastNativeSendDebug = { stage: "submit", accepted: false, reason: "composer-form-not-found" };
-      return { accepted: false, reason: "composer-form-not-found" };
     }
 
     const currentText = normalizedComposerText(composer).trim();
@@ -207,20 +256,68 @@
       return { accepted: false, reason: "composer-empty" };
     }
 
+    const form = composer.closest("form");
+    if (form) {
+      try {
+        form.requestSubmit();
+        lastNativeSendDebug = { stage: "submit", accepted: true, strategy: "requestSubmit" };
+        return { accepted: true, strategy: "requestSubmit" };
+      } catch (error) {
+        lastNativeSendDebug = {
+          stage: "submit",
+          accepted: false,
+          reason: "request-submit-failed",
+          detail: String(error)
+        };
+        return {
+          accepted: false,
+          reason: "request-submit-failed",
+          detail: String(error)
+        };
+      }
+    }
+
+    // No form wrapper (Qwen Coder): Enter-keydown on the focused composer is
+    // the native send gesture for its React-controlled input.
     try {
-      form.requestSubmit();
-      lastNativeSendDebug = { stage: "submit", accepted: true, strategy: "requestSubmit" };
-      return { accepted: true, strategy: "requestSubmit" };
+      composer.focus?.();
+      dispatchKeyboardEvent(composer, "keydown", "Enter", "Enter", 13);
+      dispatchKeyboardEvent(composer, "keypress", "Enter", "Enter", 13);
+      dispatchKeyboardEvent(composer, "keyup", "Enter", "Enter", 13);
+      lastNativeSendDebug = { stage: "submit", accepted: true, strategy: "enter-keydown" };
+      return { accepted: true, strategy: "enter-keydown" };
     } catch (error) {
       lastNativeSendDebug = {
         stage: "submit",
         accepted: false,
-        reason: "request-submit-failed",
+        reason: "enter-keydown-failed",
         detail: String(error)
       };
+      // Fall back to a send button click if keyboard synthesis failed.
+      const button = findSendButton(composer);
+      if (button) {
+        try {
+          button.click();
+          lastNativeSendDebug = { stage: "submit", accepted: true, strategy: "send-button-click" };
+          return { accepted: true, strategy: "send-button-click" };
+        } catch (buttonError) {
+          lastNativeSendDebug = {
+            stage: "submit",
+            accepted: false,
+            reason: "send-button-click-failed",
+            detail: String(buttonError)
+          };
+          return {
+            accepted: false,
+            reason: "send-button-click-failed",
+            detail: String(buttonError)
+          };
+        }
+      }
+
       return {
         accepted: false,
-        reason: "request-submit-failed",
+        reason: "enter-keydown-failed",
         detail: String(error)
       };
     }
@@ -496,7 +593,7 @@
     const composerForm = composer?.closest("form") || null;
 
     return {
-      version: 9,
+      version: 10,
       href: location.href,
       readyState: document.readyState,
       webViewAvailable: Boolean(window.chrome?.webview),
@@ -535,7 +632,7 @@
     hasResult,
     scan: scheduleScan,
     health,
-    version: 9
+    version: 10
   };
 
   const observer = new MutationObserver(scheduleScan);
