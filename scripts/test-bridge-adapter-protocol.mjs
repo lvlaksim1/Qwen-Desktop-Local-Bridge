@@ -8,7 +8,7 @@ let composer = null;
 let selectedNode = null;
 
 globalThis.window = globalThis;
-globalThis.location = { href: "https://chat.qwen.ai/" };
+globalThis.location = { href: "https://coder.qwen.ai/" };
 globalThis.HTMLTextAreaElement = class {};
 globalThis.HTMLInputElement = class {};
 

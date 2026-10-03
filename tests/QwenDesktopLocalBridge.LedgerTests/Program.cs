@@ -22,8 +22,8 @@ var root = Path.Combine(
 try
 {
     var session = "0123456789abcdef0123456789abcdef";
-    var conversationUri = "https://chat.qwen.ai/s/bridge-test?temporary=1#fragment";
-    var normalizedConversationUri = "https://chat.qwen.ai/s/bridge-test";
+    var conversationUri = "https://coder.qwen.ai/s/bridge-test?temporary=1#fragment";
+    var normalizedConversationUri = "https://coder.qwen.ai/s/bridge-test";
 
     var request = new BridgeRequest(
         session,
@@ -100,7 +100,7 @@ try
         "Pending delivery enumeration lost the persisted result payload.");
 
     var wrongConversationPending =
-        await secondRestart.GetPendingDeliveriesAsync("https://chat.qwen.ai/s/other");
+        await secondRestart.GetPendingDeliveriesAsync("https://coder.qwen.ai/s/other");
     Require(wrongConversationPending.Count == 0,
         "Pending result leaked into a different conversation scope.");
 
@@ -128,7 +128,7 @@ try
     Require(noPendingDeliveries.Count == 0, "Delivered result remained in the pending-delivery set.");
 
     var conversationConflict =
-        await thirdRestart.ReserveAsync(request, "https://chat.qwen.ai/s/other");
+        await thirdRestart.ReserveAsync(request, "https://coder.qwen.ai/s/other");
     Require(conversationConflict.Status == DurableReservationStatus.Conflict,
         "The same durable request identity was accepted from a different conversation.");
 

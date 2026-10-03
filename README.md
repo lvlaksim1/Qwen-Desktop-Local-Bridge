@@ -1,6 +1,6 @@
 # Qwen Desktop Local Bridge
 
-Экспериментальный Windows-клиент Qwen: аналог ChatGPT Desktop Local Bridge (реализован по образцу lvlaksim1/chatgpt-desktop-local-bridge), который использует обычный `chat.qwen.ai` и пользовательскую подписку Qwen **без внешнего API**, но добавляет встроенный локальный мост к компьютеру.
+Экспериментальный Windows-клиент Qwen: аналог ChatGPT Desktop Local Bridge (реализован по образцу lvlaksim1/chatgpt-desktop-local-bridge), который использует обычный `coder.qwen.ai` и пользовательскую подписку Qwen **без внешнего API**, но добавляет встроенный локальный мост к компьютеру.
 
 ## Цель первого прототипа
 
@@ -126,7 +126,7 @@ dotnet run --project .\src\QwenDesktopLocalBridge\QwenDesktopLocalBridge.csproj
 
 ## Важная архитектурная граница
 
-`chat.qwen.ai` не предоставляет публичный контракт для DOM-автоматизации. Поэтому Web adapter изолирован в одном файле `Web/bridge-adapter.js` и рассматривается как заменяемый compatibility layer. Изменение DOM Qwen не должно требовать изменения LocalToolHost или протокола.
+`coder.qwen.ai` не предоставляет публичный контракт для DOM-автоматизации. Поэтому Web adapter изолирован в одном файле `Web/bridge-adapter.js` и рассматривается как заменяемый compatibility layer. Изменение DOM Qwen не должно требовать изменения LocalToolHost или протокола.
 
 ## Данные
 

@@ -40,7 +40,7 @@ public partial class MainWindow
         var adapterScript = await File.ReadAllTextAsync(adapterPath);
         await Browser.CoreWebView2.AddScriptToExecuteOnDocumentCreatedAsync(adapterScript);
 
-        Browser.Source = new Uri("https://chat.qwen.ai/");
+        Browser.Source = new Uri("https://coder.qwen.ai/");
         StatusText.Text = "Qwen loading…";
     }
 
@@ -141,8 +141,8 @@ public partial class MainWindow
         }
 
         return uri.Scheme == Uri.UriSchemeHttps &&
-               (uri.Host.Equals("chat.qwen.ai", StringComparison.OrdinalIgnoreCase) ||
-                uri.Host.EndsWith(".chat.qwen.ai", StringComparison.OrdinalIgnoreCase));
+               (uri.Host.Equals("coder.qwen.ai", StringComparison.OrdinalIgnoreCase) ||
+                uri.Host.EndsWith(".coder.qwen.ai", StringComparison.OrdinalIgnoreCase));
     }
 
     private async void InitializeBridgeButton_OnClick(object sender, System.Windows.RoutedEventArgs e)

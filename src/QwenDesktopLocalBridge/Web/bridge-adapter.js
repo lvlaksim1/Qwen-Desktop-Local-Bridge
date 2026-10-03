@@ -17,7 +17,7 @@
   let lastProtocolDebug = null;
 
   function findComposer() {
-    // Qwen Chat (chat.qwen.ai) composer selectors first; legacy generic and
+    // Qwen Coder (coder.qwen.ai) composer selectors first; legacy generic and
     // former-host selectors kept as fallbacks. This whole selector list is a
     // replaceable compatibility layer (see README).
     const selectors = [
