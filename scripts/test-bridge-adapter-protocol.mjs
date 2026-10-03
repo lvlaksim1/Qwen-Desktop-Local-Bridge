@@ -18,6 +18,14 @@ globalThis.document = {
   querySelectorAll(selector) {
     if (selector.includes("assistant")) return assistantNodes;
     if (selector.includes("user")) return userNodes;
+    // Composer discovery selectors: expose the current mock composer for any
+    // attribute/placeholder-style selector, nothing else.
+    if (composer && (selector.includes("chat-input") ||
+        selector.includes("prompt") ||
+        selector.includes("contenteditable") ||
+        selector.includes("textarea[placeholder]"))) {
+      return [composer];
+    }
     return [];
   },
   createRange() {
@@ -78,6 +86,10 @@ function composerNode(text) {
     style: {},
     focus() {},
     querySelector() { return null; },
+    offsetParent: {},
+    getClientRects() { return [{}]; },
+    tagName: "DIV",
+    className: "chat-input",
     closest(selector) { return selector === "form" ? {} : null; },
     getAttribute(name) { return name === "contenteditable" ? "true" : null; }
   };
@@ -116,7 +128,7 @@ assert(
 );
 
 let health = window.__localBridge.health();
-assert(health.version === 10, "Expected adapter v10.");
+assert(health.version === 11, "Expected adapter v11.");
 assert(health.lastProtocolDebug?.reason === "request-json-invalid", "Malformed request reason was not request-json-invalid.");
 assert(!posted.some(x => x?.type === "bridge.request" && x?.request?.id === "req-bad"),
   "Malformed request was dispatched.");

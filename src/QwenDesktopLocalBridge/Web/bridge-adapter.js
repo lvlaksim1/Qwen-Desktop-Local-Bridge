@@ -16,6 +16,40 @@
   let lastNativeSendDebug = null;
   let lastProtocolDebug = null;
 
+  function looksLikeComposer(element) {
+    if (!element) return false;
+
+    const tag = element.tagName ? element.tagName.toLowerCase() : "";
+    if (tag !== "textarea" && tag !== "input" && tag !== "div") return false;
+
+    const isEditable = tag === "textarea" || tag === "input" ||
+      element.getAttribute("contenteditable") === "true";
+    if (!isEditable) return false;
+
+    // Never treat rich text editors inside the chat history (e.g. code blocks)
+    // as the composer: only accept elements that are visibly interactive.
+    if (element.offsetParent === null && element.getClientRects().length === 0) {
+      return false;
+    }
+
+    const role = (element.getAttribute("role") || "").toLowerCase();
+    const testId = (element.getAttribute("data-testid") || "").toLowerCase();
+    const ariaLabel = (element.getAttribute("aria-label") || "").toLowerCase();
+    const placeholder = (element.getAttribute("placeholder") || "").toLowerCase();
+    const className = typeof element.className === "string"
+      ? element.className.toLowerCase()
+      : "";
+
+    const haystack = `${role} ${testId} ${ariaLabel} ${placeholder} ${className}`;
+    if (/chat|prompt|composer|message|input|editor/.test(haystack)) return true;
+
+    // A visible multiline editable textarea without any marker is still very
+    // likely the message box on Qwen surfaces.
+    if (tag === "textarea") return true;
+
+    return false;
+  }
+
   function findComposer() {
     // Qwen Coder (coder.qwen.ai) composer selectors first; legacy generic and
     // former-host selectors kept as fallbacks. This whole selector list is a
@@ -24,18 +58,31 @@
       "textarea#chat-input",
       "div[contenteditable='true'][id='chat-input']",
       "div[contenteditable='true'][role='textbox']",
-      "textarea[placeholder]",
-      "#prompt-textarea",
-      "textarea[data-testid='prompt-textarea']",
-      "div[contenteditable='true'][data-testid='prompt-textarea']"
+      "[data-testid*='chat-input' i]",
+      "[data-testid*='prompt' i][contenteditable='true']",
+      "[data-testid*='prompt' i] textarea",
+      "div[contenteditable='true'][aria-label]",
+      "textarea[placeholder]"
     ];
 
     for (const selector of selectors) {
-      const element = document.querySelector(selector);
-      if (element) return element;
+      const candidates = document.querySelectorAll(selector);
+      for (const element of candidates) {
+        if (looksLikeComposer(element)) return element;
+      }
     }
 
-    return null;
+    // Last resort: scan all editable elements and pick the best heuristic match.
+    let fallback = null;
+    for (const element of document.querySelectorAll(
+      "textarea, div[contenteditable='true'], input[type='text']")) {
+      if (looksLikeComposer(element)) {
+        fallback = element;
+        break;
+      }
+    }
+
+    return fallback;
   }
 
   function getComposerText(composer = findComposer()) {
@@ -593,7 +640,7 @@
     const composerForm = composer?.closest("form") || null;
 
     return {
-      version: 10,
+      version: 11,
       href: location.href,
       readyState: document.readyState,
       webViewAvailable: Boolean(window.chrome?.webview),
@@ -601,7 +648,7 @@
       composerTag: composer?.tagName || null,
       composerContentEditable: composer?.getAttribute?.("contenteditable") || null,
       composerFormFound: Boolean(composerForm),
-      nativeInputReady: Boolean(composer && composerForm),
+      nativeInputReady: Boolean(composer),
       assistantMessages: getAssistantMessageNodes().length,
       userMessages: getUserMessageNodes().length,
       sendReceiptAvailable: true,
@@ -632,7 +679,7 @@
     hasResult,
     scan: scheduleScan,
     health,
-    version: 10
+    version: 11
   };
 
   const observer = new MutationObserver(scheduleScan);
