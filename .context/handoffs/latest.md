@@ -19,3 +19,7 @@ Windows-host build + BRIDGE-M1-equivalent live probe against coder.qwen.ai; cali
 ## Additional 2026-10-03 update
 
 Owner directive: app must work with https://coder.qwen.ai/, not chat.qwen.ai. Repointed host everywhere (MainWindow.xaml.cs start URL + allow-list, bridge-adapter.js comment, LedgerTests, adapter test fixture, README) in main@3de2d5b; node adapter protocol test PASS; git grep confirms zero chat.qwen refs. CI run 37085522846 success; prerelease dev-3de2d5b published (Setup.exe ~51.4 MB + Update-from-dev-0bc8fd9.exe). New beliefs B-013/B-014; next.md points at dev-3de2d5b installer; coder.qwen.ai DOM calibration is now the key open risk.
+
+## Additional 2026-10-03 update (isolation defect)
+
+Owner report: Qwen Setup still asked to close running ChatGptDesktopLocalBridge. Root cause found by re-inspection: Inno Setup AppId GUID {{7D6B9AF8-...}} was inherited verbatim from the reference project — same AppId = same product for Setup's CloseApplications detection and registry identity; earlier B-012 "full isolation" claim was wrong (superseded by B-015). Fix in main@fc319eb: unique Qwen AppId {{6B6ED332-7F58-4A6F-B706-A65AFE339FDD}} across .iss, Apply-Update.ps1, Uninstall-Bridge.ps1; git grep confirms zero old-GUID refs. CI green; prerelease dev-fc319eb published (Setup.exe + Update-from-dev-0bc8fd9/3de2d5b). Owner guidance: uninstall any pre-fc319eb Qwen build first; ChatGPT app untouched by this fix.
