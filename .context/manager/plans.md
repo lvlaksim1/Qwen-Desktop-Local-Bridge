@@ -3,7 +3,7 @@
 P-001 (serves I-001/G-001): after every semantic change rerun validate/ready/recover locally on `manager-state` checkout; publish as coherent commits; keep working views consistent with BDI state.
 
 P-002 (serves I-002/G-002): reconnaissance phase — RESUMED AS LIVE CALIBRATION: static port completed 2026-10-02 (P-003 executed first per owner directive); remaining reconnaissance folded into on-Windows probing:
-1. inspection of chat.qwen.ai composer structure via a Diagnostics-style probe ported from the reference adapter;
+1. inspection of coder.qwen.ai composer structure via a Diagnostics-style probe ported from the reference adapter;
 2. identify stable insertion + submit path mirroring Input.insertText + form.requestSubmit approach;
 3. document marker-envelope candidates for Qwen (strict, parseable, collision-free);
 4. output: docs/ADAPTER-FEASIBILITY.md + decision record; escalate to owner if Qwen UI forbids reliable injection.

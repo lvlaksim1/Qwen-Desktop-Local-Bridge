@@ -32,11 +32,11 @@ B-008 Qwen web UI DOM/selectors and submit transport behavior are unknown; adapt
 source: absence of any probing work in either repository @ 2026-10-02
 authority: manager-inference
 
-B-009 Product implementation exists on `main` at commit 8eead85: full analog of chatgpt-desktop-local-bridge ported to Qwen (31 files: WPF+WebView2 host pinned to https://chat.qwen.ai, Bridge protocol v1 classes, durable ledger, permission policy, read-only tools system.info/fs.list/fs.read_text, bridge-adapter.js with Qwen composer/message selectors as replaceable compat layer, installer, update scripts, CI workflow, LedgerTests). Owner directive 2026-10-02: same functionality and purpose as the reference, targeting Qwen instead of ChatGPT.
+B-009 Product implementation exists on `main` at commit 8eead85: full analog of chatgpt-desktop-local-bridge ported to Qwen (31 files: WPF+WebView2 host pinned to https://coder.qwen.ai, Bridge protocol v1 classes, durable ledger, permission policy, read-only tools system.info/fs.list/fs.read_text, bridge-adapter.js with Qwen composer/message selectors as replaceable compat layer, installer, update scripts, CI workflow, LedgerTests). Owner directive 2026-10-02: same functionality and purpose as the reference, targeting Qwen instead of ChatGPT.
 source: owner directive @ 2026-10-02 + git push main 2b4c202..8eead85 verified via git ls-remote
 authority: owner-directive
 
-B-010 C# sources are byte-equivalent to the reference after identifier rename (QwenDesktopLocalBridge->ChatGptDesktopLocalBridge); only intentional diffs remain: host URL/chat.qwen.ai allow-list in MainWindow.xaml.cs, brand strings in BridgeHost.cs, and Qwen-specific selector additions in bridge-adapter.js. dotnet SDK unavailable in this environment, so no Windows build was run here; node adapter protocol test passes (scripts/test-bridge-adapter-protocol.mjs -> PASS).
+B-010 C# sources are byte-equivalent to the reference after identifier rename (QwenDesktopLocalBridge->ChatGptDesktopLocalBridge); only intentional diffs remain: host URL/coder.qwen.ai allow-list in MainWindow.xaml.cs, brand strings in BridgeHost.cs, and Qwen-specific selector additions in bridge-adapter.js. dotnet SDK unavailable in this environment, so no Windows build was run here; node adapter protocol test passes (scripts/test-bridge-adapter-protocol.mjs -> PASS).
 source: diff -r between local clones of reference @6e2a0b5 and qwen checkout @ 2026-10-02; node test run
 authority: verified-repository
 
@@ -47,3 +47,11 @@ authority: verified-repository
 B-012 Full product isolation from ChatGPT Desktop Local Bridge confirmed in main: unique AppId {{7D6B9AF8-...}}, install dir %LOCALAPPDATA%\Programs\Qwen Desktop Local Bridge, no chatgpt references anywhere in iss/cs/csproj/yml/js sources (git grep verified); owner-reported "installed over ChatGPT app" was caused by stale non-existent release link dev-6c91e8b (404) and/or running-instance file lock, not by shared identity. New prerelease dev-0bc8fd9 adds AppMutex=QwenDesktopLocalBridge_SingleInstance so Setup closes a running instance instead of failing; CI green; assets include Setup.exe + Update-from-dev-a70e205.exe.
 source: git grep origin/main @ 2026-10-02 + installer diff commit 0bc8fd9 + GitHub API run 37023533650 conclusion=success + releases assets listing
 authority: verified-repository
+
+B-013 Target host changed from chat.qwen.ai to https://coder.qwen.ai/ per explicit owner directive 2026-10-03 ("приложение должно работать с https://coder.qwen.ai/, а не с https://chat.qwen.ai/"). Applied in main@3de2d5b: start URL + HTTPS host allow-list (exact + subdomains) in MainWindow.xaml.cs, adapter comment, LedgerTests conversation URIs, adapter protocol test fixture href, README. git grep on main shows zero remaining chat.qwen references.
+source: owner directive @ 2026-10-03 + commit 3de2d5b pushed and verified via git ls-remote + git grep origin/main
+authority: owner-directive
+
+B-014 coder.qwen.ai DOM structure is unverified; the bridge-adapter.js selector set was authored against chat.qwen.ai and may require calibration for coder.qwen.ai (which may be an agentic coding UI with a different composer). Live M1 handshake on Windows is now the primary feasibility gate for the new host.
+source: absence of any probing of coder.qwen.ai in this environment @ 2026-10-03
+authority: manager-inference
